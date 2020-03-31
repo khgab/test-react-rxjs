@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Observable, Subscribable, Unsubscribable, Subject, from } from "rxjs";
 import { switchMap, debounceTime, distinctUntilChanged } from "rxjs/operators";
 
@@ -62,9 +62,9 @@ export function useRandomCall() {
 // }
 
 export function useRandomCallRxjs() {
-  const [searchTerm, setSearchTermRxjs] = useState("");
+  //const [searchTerm, setSearchTermRxjs] = useState("");
   const [resultsRxjs, setResults] = useState<data[]>([]);
-  const searchTerm$ = new Subject<String>();
+  const [searchTerm$] = React.useState(new Subject<String>());
   const fetchData = () => {
     const resultNumber = getRandomArbitrary(0, 6);
     console.log(resultNumber);
@@ -76,16 +76,19 @@ export function useRandomCallRxjs() {
     return from(promise);
   };
   useEffect(() => {
-    searchTerm$.next(searchTerm);
-  }, [searchTerm]);
+    const sub = searchTerm$
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        switchMap(term => fetchData())
+      )
+      .subscribe(e => setResults(e));
 
-  searchTerm$
-    .pipe(
-      debounceTime(500),
-      distinctUntilChanged(),
-      switchMap(term => fetchData())
-    )
-    .subscribe(e => setResults(e));
+    return () => {
+      sub.unsubscribe();
+    };
+    // searchTerm$.next(searchTerm);
+  }, []);
 
-  return { setSearchTermRxjs, resultsRxjs };
+  return { resultsRxjs, searchTerm$ };
 }

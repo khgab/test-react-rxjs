@@ -4,7 +4,7 @@ import { useRandomCall, useRandomCallRxjs } from "./hooks";
 
 function App() {
   const { setSearchTerm, results } = useRandomCall();
-  const { setSearchTermRxjs, resultsRxjs } = useRandomCallRxjs();
+  const { searchTerm$, resultsRxjs } = useRandomCallRxjs();
   return (
     <div className="App">
       <header className="App-header">
@@ -16,7 +16,7 @@ function App() {
             <li> {res.email}</li>
           ))}
         </ul>
-        <input type="text" onChange={e => setSearchTermRxjs(e.target.value)} />
+        <input type="text" onChange={e => searchTerm$.next(e.target.value)} />
 
         <ul>
           {resultsRxjs.map(res => (
